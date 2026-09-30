@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contacto — TechNews Hub</title>
+  <meta name="description" content="Contacto editorial de TechNews Hub y preguntas frecuentes sobre el trabajo de la redacción.">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div data-layout="header"></div>
+
+  <main id="main">
+    <div class="container">
+        <h1 class="page-title">Contáctanos</h1>
+
+        <section class="section">
+          <div class="contacto">
+            <div id="col-form">
+              <h2 class="section__title">Envíanos un mensaje</h2>
+              <p class="section__lead">
+                Para consultas editoriales, licencias o correcciones. Respondemos en un
+                plazo de 48 horas hábiles.
+              </p>
+
+              <form class="form-grid" id="form-contacto" novalidate>
+                <div class="field">
+                  <label for="c-nombre">Nombre completo</label>
+                  <input class="input" id="c-nombre" name="nombre" type="text"
+                         autocomplete="name" minlength="3" maxlength="80" required>
+                  <p class="error" id="ce-nombre" role="alert"></p>
+                </div>
+
+                <div class="field">
+                  <label for="c-email">Correo electrónico</label>
+                  <input class="input" id="c-email" name="email" type="email"
+                         autocomplete="email" placeholder="nombre@dominio.com" required>
+                  <p class="error" id="ce-email" role="alert"></p>
+                </div>
+
+                <div class="field">
+                  <label for="c-asunto">Asunto</label>
+                  <input class="input" id="c-asunto" name="asunto" type="text"
+                         autocomplete="off" minlength="3" maxlength="120" required>
+                  <p class="error" id="ce-asunto" role="alert"></p>
+                </div>
+
+                <div class="field">
+                  <label for="c-mensaje">Mensaje</label>
+                  <textarea class="input" id="c-mensaje" name="mensaje"
+                            minlength="20" maxlength="1000" required></textarea>
+                  <p class="error" id="ce-mensaje" role="alert"></p>
+                </div>
+
+                <div>
+                  <button class="btn btn--primary" type="submit">Enviar Mensaje →</button>
+                </div>
+              </form>
+            </div>
+
+          <aside aria-labelledby="faq-title">
+            <h2 class="section__title" id="faq-title">Preguntas Frecuentes</h2>
+            <div class="faq" id="faq"></div>
+          </aside>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div data-layout="footer"></div>
+
+  <script src="js/datos.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/componentes.js"></script>
+  <script src="js/almacen.js"></script>
+  <script src="js/interacciones.js"></script>
+  <script>
+    /* IIFE: en un script clasico no hay top-level await, pero dentro de una
+       funcion async si. La logica queda igual que antes. */
+    (async () => {
+      const REGLAS = {
+        nombre: { requerido: true, min: 3, etiqueta: 'El nombre' },
+        email: { requerido: true, email: true, etiqueta: 'El email' },
+        asunto: { requerido: true, min: 3, etiqueta: 'El asunto' },
+        mensaje: { requerido: true, min: 20, etiqueta: 'El mensaje' },
+      };
+
+    try {
+      const datos = await cargarDatos();
+      montarLayout(datos);
+
+      document.getElementById('faq').innerHTML = datos.faq.map((f) => `
+        <details>
+          <summary>${escapar(f.pregunta)}</summary>
+          <p>${escapar(f.respuesta)}</p>
+        </details>`).join('');
+
+      const form = document.getElementById('form-contacto');
+      limpiarErroresAlEscribir(form);
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (!validarForm(form, REGLAS)) return;
+
+        /* Sin backend: la confirmación reemplaza al formulario en el lugar. */
+        document.getElementById('col-form').innerHTML = `
+          <h2 class="section__title">Mensaje enviado</h2>
+          <p class="section__lead">
+            Gracias por escribir. Nuestro equipo editorial responde en un plazo de
+            48 horas hábiles.
+          </p>
+          <p style="margin-top: var(--space-10)">
+            <a class="btn btn--primary" href="index.html">Volver al inicio</a>
+          </p>`;
+      });
+    } catch (err) {
+      document.getElementById('main').innerHTML = `
+        <div class="container"><p class="vacio">
+          No se pudieron cargar los datos del sitio.<br>
+          Verificá que <code>js/datos.js</code> esté presente junto a esta página.
+        </p></div>`;
+      console.error(err);
+    }
+    })();
+  </script>
+</body>
+</html>

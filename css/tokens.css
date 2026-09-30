@@ -1,0 +1,110 @@
+/* ==========================================================================
+   TechNews Hub — Design Tokens
+   Extraídos de Figma vía REST API (file_key: LskF01uXAoyQvwP2twfBIx)
+   Todos los valores verificados contra la API. Los marcados INFERRED
+   no se pudieron leer por rate limit (HTTP 429) y están señalados.
+   ========================================================================== */
+
+:root {
+  /* ---------------------------------------------------------------------
+     COLOR
+     Palette = Tailwind slate scale + indigo-600 como primario
+     --------------------------------------------------------------------- */
+  --color-white: #ffffff;
+  --color-slate-50: #f8fafc;
+  --color-slate-100: #f1f5f9;
+  --color-slate-200: #e2e8f0;
+  --color-slate-700: #334155;
+  --color-slate-800: #1e293b;
+  --color-slate-900: #0f172a;
+
+  --color-primary: #4f46e5;          /* indigo-600 */
+  --color-danger: #ef4444;           /* red-500 — breaking badge */
+
+  --color-overlay: rgba(15, 23, 42, 0.40);
+  --color-tag-bg: rgba(79, 70, 229, 0.08);
+  --color-media-fallback: rgba(15, 23, 42, 0.30);
+
+  /* Semantic aliases */
+  --bg-page: var(--color-white);
+  --bg-subtle: var(--color-slate-50);
+  --bg-inverse: var(--color-slate-900);
+  --text-primary: var(--color-slate-900);
+  --text-secondary: var(--color-slate-700);
+  --border-subtle: var(--color-slate-100);
+  --border-default: var(--color-slate-200);
+
+  /* ---------------------------------------------------------------------
+     TYPOGRAPHY
+     Dos familias: Outfit = display, Manrope = body. Ambas Google Fonts.
+     line-height expressed as ratios, equivalente a los px de Figma.
+     --------------------------------------------------------------------- */
+  --font-display: "Outfit", system-ui, sans-serif;
+  --font-body: "Manrope", system-ui, sans-serif;
+
+  --text-hero: 800 2.5rem/1.15 var(--font-display);        /* 40 / 46  Outfit 800 */
+  --text-logo: 800 1.375rem/1.26 var(--font-display);      /* 22 / 27.72 Outfit 800 */
+  /* Titulo de seccion. Verificado por medicion sobre el render 2x de Figma:
+     caja de tinta 21px CSS (mayusculas + punto de i, sin descendentes)
+     => 21 / 0.73em = ~29px. El mismo criterio aplicado al H1 del hero, cuyo
+     valor Figma conocido es 40px, devuelve 39 / 0.97em = 40px, lo que calibra
+     la conversion. Confirmado 28px (28 / 33.6 Outfit 800). */
+  --text-title: 800 1.75rem/1.2 var(--font-display);
+
+  --text-excerpt: 400 0.9375rem/1.6 var(--font-body);      /* 15 / 24  Manrope 400 */
+  --text-nav: 500 0.875rem/1.366 var(--font-body);         /* 14 / 19.12 */
+  --text-nav-active: 700 0.875rem/1.366 var(--font-body);  /* 14 / 19.12 */
+  --text-button: 600 0.875rem/1.366 var(--font-body);      /* 14 / 19.12 */
+  --text-body: 400 0.8125rem/1.366 var(--font-body);       /* 13 / 17.76 */
+  --text-author: 700 0.8125rem/1.366 var(--font-body);      /* 13 / 17.76 */
+  --text-meta: 500 0.75rem/1.366 var(--font-body);         /* 12 / 16.39 */
+  --text-badge: 800 0.6875rem/1.366 var(--font-body);      /* 11 / 15.03 */
+  --text-tag: 700 0.6875rem/1.366 var(--font-body);        /* 11 / 15.03 */
+  --text-caption: 400 0.6875rem/1.366 var(--font-body);    /* 11 / 15.03 */
+
+  --tracking-normal: 0;   /* letterSpacing = 0 en todos los nodos */
+
+  /* ---------------------------------------------------------------------
+     SPACING — escala derivada de paddings y gaps reales de Figma
+     --------------------------------------------------------------------- */
+  --space-1: 4px;
+  --space-2: 6px;
+  --space-3: 8px;
+  --space-4: 10px;
+  --space-5: 12px;
+  --space-6: 16px;
+  --space-8: 20px;
+  --space-10: 24px;
+  --space-12: 32px;
+  --space-14: 40px;
+  --space-16: 48px;
+  --space-18: 56px;
+  --space-20: 64px;
+  --space-24: 80px;
+  --space-30: 120px;
+
+  /* ---------------------------------------------------------------------
+     LAYOUT
+     --------------------------------------------------------------------- */
+  --container-width: 1440px;
+  --container-pad: 80px;          /* gutter estándar */
+  --container-pad-wide: 120px;    /* detalle + dashboard */
+  --nav-height: 80px;
+
+  /* ---------------------------------------------------------------------
+     RADII
+     --------------------------------------------------------------------- */
+  --radius-sm: 4px;   /* badges, tags */
+  --radius-md: 6px;   /* logo, botones */
+  --radius-lg: 8px;   /* search bar */
+  --radius-xl: 12px;  /* media wrapper */
+
+  /* ---------------------------------------------------------------------
+     ELEVATION — INFERRED
+     Los nodos con "effects" arrivalaron vacíos en la respuesta simplificada,
+     por lo que no hay sombras verificadas en el archivo.
+     --------------------------------------------------------------------- */
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.12);
+}

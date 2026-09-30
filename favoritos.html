@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Favoritos — TechNews Hub</title>
+  <meta name="description" content="Las noticias de TechNews Hub que guardaste para leer más tarde.">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div data-layout="header"></div>
+
+  <main id="main">
+      <div class="container">
+        <div id="listado"></div>
+      </div>
+  </main>
+
+  <div data-layout="footer"></div>
+
+  <script src="js/datos.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/componentes.js"></script>
+  <script src="js/almacen.js"></script>
+  <script src="js/interacciones.js"></script>
+  <script>
+    /* IIFE: en un script clasico no hay top-level await, pero dentro de una
+       funcion async si. La logica queda igual que antes. */
+    (async () => {
+    try {
+      const datos = await cargarDatos();
+      montarLayout(datos);
+
+      const listado = document.getElementById('listado');
+
+      /* Favoritos no es otra pagina: es el mismo renderListado con el
+         subconjunto persistido. Por eso no hay HTML duplicado. */
+      function render() {
+        const favs = leerFavoritos();
+        const noticias = datos.noticias.filter((n) => favs.has(n.id));
+        const total = noticias.length;
+
+        listado.innerHTML = renderListado(noticias, {
+          titulo: 'Tus Favoritos',
+          bajada: total
+            ? `${total} ${total === 1 ? 'noticia guardada' : 'noticias guardadas'} en este navegador.`
+            : 'Tu lista de lectura se guarda en este navegador.',
+          conFiltro: false,
+          vacio: 'Todavía no guardaste ninguna noticia. Usá el corazón en cualquier artículo para agregarla.',
+            accion: 'Leer noticia completa',
+            autores: datos.autoresMap,
+            catsMap: datos.categoriasMap,
+            nivel: 'h1',
+          });
+      }
+
+      render();
+
+      /* Si se saca el corazón desde esta misma pagina, la tarjeta tiene que
+         desaparecer en el acto: re-render + repintado de los corazones. */
+      activarFavoritos((_id, activo) => {
+        if (activo) return;
+        render();
+        pintarFavoritos();
+      });
+    } catch (err) {
+      document.getElementById('main').innerHTML = `
+        <div class="container"><p class="vacio">
+          No se pudieron cargar los datos del sitio.<br>
+          Verificá que <code>js/datos.js</code> esté presente junto a esta página.
+        </p></div>`;
+      console.error(err);
+    }
+    })();
+  </script>
+</body>
+</html>

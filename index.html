@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TechNews Hub — Periodismo de tecnología independiente</title>
+  <meta name="description"
+        content="La plataforma líder de periodismo de tecnología independiente en español. Datos precisos, análisis profundos.">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <!-- El header y el footer los inyecta js/layout.js. No se duplican en el HTML. -->
+  <div data-layout="header"></div>
+
+  <main id="main">
+    <div class="container">
+      <!-- HERO: layout9 de Figma — horizontal, gap 48 -->
+      <section id="hero" class="hero" aria-labelledby="hero-title"></section>
+    </div>
+
+    <!-- CATÁLOGO: el mismo renderer que usa noticias.html -->
+    <div class="container">
+      <div id="destacadas"></div>
+    </div>
+  </main>
+
+  <!-- NEWSLETTER: layout12 de Figma -->
+  <section class="newsletter" aria-labelledby="news-title">
+    <div class="container newsletter__inner">
+      <div class="newsletter__content">
+        <h2 class="newsletter__title" id="news-title">Inteligencia en tu bandeja de entrada</h2>
+        <p class="newsletter__text">
+          Únete a más de 25,000 lectores que reciben nuestro resumen semanal.
+          Sin spam, solo la señal que importa.
+        </p>
+      </div>
+      <div>
+        <form class="newsletter__form" id="form-news" novalidate>
+          <label class="sr-only" for="email-news">Email</label>
+          <input class="input" id="email-news" name="email" type="email"
+                 placeholder="tu@email.com" required>
+          <button class="btn btn--primary" type="submit">Suscribirme</button>
+        </form>
+        <p class="newsletter__nota">Al suscribirte aceptas nuestra política de privacidad.</p>
+        <p class="error" id="news-error" data-for="email" role="alert"></p>
+      </div>
+    </div>
+  </section>
+
+  <div data-layout="footer"></div>
+
+  <script src="js/datos.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/componentes.js"></script>
+  <script src="js/almacen.js"></script>
+  <script src="js/interacciones.js"></script>
+  <script>
+    /* IIFE: en un script clasico no hay top-level await, pero dentro de una
+       funcion async si. La logica queda igual que antes. */
+    (async () => {
+    try {
+      const datos = await cargarDatos();
+      montarLayout(datos);
+
+      /* ---- Hero: la noticia destacada más reciente ---- */
+      const destacada = datos.noticias.find((n) => n.destacada) || datos.noticias[0];
+      const autor = datos.autoresMap.get(destacada.autor);
+      const categoria = datos.categoriasMap.get(destacada.categoria);
+
+      document.getElementById('hero').innerHTML = `
+        <div class="hero__media">
+          ${destacada.imagen ? `<img src="${escapar(destacada.imagen)}"
+             alt="${escapar(destacada.titulo)}" fetchpriority="high">` : ''}
+          <span class="hero__badge">${badge('Última hora')}</span>
+        </div>
+        <div class="hero__content">
+          <div class="hero__meta">
+            ${tag(categoria.nombre)}
+            <span class="hero__time">
+              ${escapar(tiempoRelativo(destacada.fecha))} • 6 min de lectura
+            </span>
+          </div>
+          <h1 class="hero__headline" id="hero-title">${escapar(destacada.titulo)}</h1>
+          <p class="hero__excerpt">${escapar(destacada.resumen)}</p>
+          <div class="hero__author">
+            <span class="hero__avatar" aria-hidden="true"></span>
+            <span class="hero__authorText">
+              <span class="hero__authorName">${escapar(autor.nombre)}</span>
+              <span class="hero__authorRole">${escapar(autor.rol)}</span>
+            </span>
+          </div>
+          ${botonPrimario('Leer noticia completa', `noticia.html?id=${destacada.id}`)}
+        </div>`;
+
+      /* ---- Grilla: mismo renderer que noticias.html y favoritos.html ---- */
+      document.getElementById('destacadas').innerHTML = renderListado(
+        datos.noticias.filter((n) => n.id !== destacada.id),
+        {
+          titulo: 'Noticias Destacadas',
+          bajada: 'Lo más relevante de la semana, seleccionado por nuestra redacción.',
+          autores: datos.autoresMap,
+          catsMap: datos.categoriasMap,
+        }
+      );
+
+      activarFavoritos();
+
+      /* ---- Newsletter con validación ---- */
+      const form = document.getElementById('form-news');
+      limpiarErroresAlEscribir(form);
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const ok = validarForm(form, {
+          email: { requerido: true, email: true, etiqueta: 'El email' },
+        });
+        if (!ok) return;
+        form.reset();
+        document.getElementById('news-error').textContent = '';
+        form.elements.email.setAttribute('aria-invalid', 'false');
+        alert('¡Listo! Te suscribiste al resumen semanal.');
+      });
+    } catch (err) {
+      document.getElementById('main').innerHTML = `
+        <div class="container"><p class="vacio">
+          No se pudieron cargar los datos del sitio.<br>
+          Verificá que <code>js/datos.js</code> esté presente junto a esta página.
+        </p></div>`;
+      console.error(err);
+    }
+    })();
+  </script>
+</body>
+</html>

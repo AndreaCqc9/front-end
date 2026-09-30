@@ -1,0 +1,1362 @@
+/* ==========================================================================
+   styles.css — TechNews Hub
+   Todos los valores vienen de design/tokens.css, extraidos de Figma.
+   Los numeros de layout corresponden a los auto-layouts reales del archivo.
+   ========================================================================== */
+
+/* tokens.css vive en design/ (fuente de verdad). Ruta relativa desde css/. */
+@import url('tokens.css');
+
+/* Google Fonts: Outfit (display) + Manrope (body) */
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Outfit:wght@700;800&display=swap');
+
+/* ------------------------------------------------------------------- reset */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+input {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+body {
+  font: var(--text-body);
+  color: var(--text-primary);
+  background: var(--bg-page);
+  -webkit-font-smoothing: antialiased;
+  /* Un token largo sin espacios (una URL muy larga, un identificador) se
+     desborda de su bloque y ensancha el scroll de la pagina en 360px.
+     `break-word` solo parte la palabra cuando no entra sola en la linea,
+     asi que no altera el ajuste de linea del texto normal. */
+  overflow-wrap: break-word;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.15;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.container {
+  width: 100%;
+  max-width: var(--container-width);
+  margin-inline: auto;
+  padding-inline: var(--container-pad);
+}
+
+.container--wide {
+  padding-inline: var(--container-pad-wide);
+}
+
+/* ================================================================= NAV ===
+   Figma layout2: horizontal, space-between, padding 0 80, alto 80 */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--color-white);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.nav__inner {
+  max-width: var(--container-width);
+  margin-inline: auto;
+  padding-inline: var(--container-pad);
+  height: var(--nav-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.logo__mark {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  background: var(--color-primary);
+  border-radius: var(--radius-md);
+  color: #fff;
+}
+
+.logo__mark svg {
+  width: 18px;
+  height: 18px;
+}
+
+.logo__word {
+  font: var(--text-logo);
+}
+
+.logo__word b {
+  color: var(--color-primary);
+}
+
+.logo--inverse .logo__word {
+  color: #fff;
+}
+
+.logo--inverse .logo__word b {
+  color: var(--color-primary);
+}
+
+/* Boton hamburguesa: se dibuja con el icono SVG de `icono('menu')` (layout.js),
+   asi que no suma assets. Oculto en escritorio, visible por debajo de 720px. */
+.nav__toggle {
+  display: none;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  background: none;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.nav__toggle:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.nav__toggle[aria-expanded="true"] {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+.nav__toggle svg {
+  width: 20px;
+  height: 20px;
+}
+
+.nav__links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+}
+
+.nav__link {
+  display: block;
+  padding-block: var(--space-2);
+  font: var(--text-nav);
+  color: var(--text-secondary);
+  border-bottom: 1px solid transparent;
+  transition: color .15s, border-color .15s;
+}
+
+.nav__link:hover {
+  color: var(--color-primary);
+}
+
+.nav__link.is-active {
+  font: var(--text-nav-active);
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+
+/* Figma: radius 8, bg slate-50, borde slate-200, padding 0 12, gap 8, alto 40 */
+.search {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  height: 40px;
+  padding-inline: var(--space-5);
+  background: var(--color-slate-50);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  width: 260px;
+}
+
+.search__icon {
+  width: 16px;
+  height: 16px;
+  color: var(--text-secondary);
+}
+
+.search__icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.search__input {
+  border: 0;
+  background: none;
+  outline: none;
+  width: 100%;
+  font: var(--text-body);
+  color: var(--text-primary);
+}
+
+.search__input::placeholder {
+  color: var(--text-secondary);
+}
+
+/* ================================================================ HERO ===
+   Figma layout9: horizontal, gap 48, padding 48 80 */
+.hero {
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+  padding-block: var(--space-10);
+}
+
+/* Figma: 752x480, radius 12, padding 24 */
+.hero__media {
+  position: relative;
+  flex: 0 0 752px;
+  height: 480px;
+  padding: var(--space-10);
+  border-radius: var(--radius-xl);
+  background: var(--color-media-fallback);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.hero__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+}
+
+.hero__badge {
+  position: absolute;
+  top: var(--space-10);
+  left: var(--space-10);
+  z-index: 1;
+}
+
+.hero__content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-10);
+}
+
+.hero__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.hero__time {
+  font: var(--text-meta);
+  color: var(--text-secondary);
+}
+
+.hero__headline {
+  font: var(--text-hero);
+}
+
+.hero__excerpt {
+  font: var(--text-excerpt);
+  color: var(--text-secondary);
+}
+
+.hero__author {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.hero__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--color-slate-200);
+  flex-shrink: 0;
+}
+
+.hero__authorText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hero__authorName {
+  font: var(--text-author);
+}
+
+.hero__authorRole {
+  font: var(--text-caption);
+  color: var(--text-secondary);
+}
+
+/* Tarjeta de autor que el diseño (03-detalle-noticia.png) coloca en la
+   lateral derecha, debajo de las noticias relacionadas. */
+.autor-card {
+  margin-top: var(--space-12);
+  padding: var(--space-8);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--bg-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.autor-card__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.autor-card__name {
+  font: var(--text-author);
+}
+
+.autor-card__role {
+  font: var(--text-caption);
+  color: var(--text-secondary);
+}
+
+.autor-card__link {
+  font: var(--text-caption);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* ============================================================== SECTIONS === */
+.section {
+  padding-block: var(--space-18);
+}
+
+.section--subtle {
+  background: var(--bg-subtle);
+}
+
+.section__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-8);
+  margin-bottom: var(--space-12);
+}
+
+.section__title {
+  font: var(--text-title);
+}
+
+.section__lead {
+  font: var(--text-excerpt);
+  color: var(--text-secondary);
+  margin-top: var(--space-2);
+  max-width: 62ch;
+}
+
+/* Figma grid-news: vertical gap 32 padding 56/80 */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-12);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-white);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: border-color .15s, transform .15s;
+}
+
+.card:hover {
+  border-color: var(--color-slate-200);
+  transform: translateY(-2px);
+}
+
+.media {
+  width: 100%;
+  background: var(--color-slate-100);
+}
+
+.media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.media--vacio {
+  background: var(--color-media-fallback);
+}
+
+.card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-8);
+  flex: 1;
+}
+
+.card__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.card__time {
+  font: var(--text-caption);
+  color: var(--text-secondary);
+}
+
+.card__title {
+  font: var(--text-author);
+  font-size: 17px;
+  line-height: 1.35;
+}
+
+.card__title a:hover {
+  color: var(--color-primary);
+}
+
+.card__resumen {
+  font: var(--text-body);
+  color: var(--text-secondary);
+}
+
+.card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: var(--space-3);
+}
+
+.card__autor {
+  font: var(--text-caption);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* CTA de la tarjeta. Se ve como boton y comparte medidas con `.btn--primary`
+   -- mismo fondo, borde, padding y radio --, para que el link de la card y
+   el boton grande de la home se lean como la misma accion.
+   `renderListado()` lo inyecta como hermano de `.card__body`, no dentro: por
+   eso el margen lateral replica el padding de `.card__body` (--space-8) y lo
+   alinea con el contenido en vez de pegarse al borde de la card. */
+.card__accion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 var(--space-8) var(--space-8);
+  padding: var(--space-5) var(--space-10);
+  background: var(--color-primary);
+  color: #fff;
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  font: var(--text-button);
+  text-align: center;
+  transition: filter .15s;
+}
+
+.card__accion:hover {
+  filter: brightness(1.08);
+}
+
+.card__fav {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  background: none;
+  border: 0;
+  border-radius: var(--radius-md);
+  color: var(--color-slate-200);
+  cursor: pointer;
+  transition: color .15s, background .15s;
+}
+
+.card__fav svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+.card__fav:hover {
+  background: var(--color-slate-50);
+  color: var(--color-danger);
+}
+
+.card__fav[aria-pressed="true"] {
+  color: var(--color-danger);
+}
+
+/* --------------------------------------------------------- tag / badge / btn */
+.tag {
+  display: inline-block;
+  padding: var(--space-1) var(--space-4);
+  background: var(--color-tag-bg);
+  color: var(--color-primary);
+  border-radius: var(--radius-sm);
+  font: var(--text-tag);
+}
+
+.badge {
+  display: inline-block;
+  padding: var(--space-2) var(--space-5);
+  background: var(--color-danger);
+  color: #fff;
+  border-radius: var(--radius-sm);
+  font: var(--text-badge);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-10);
+  border: 0;
+  border-radius: var(--radius-md);
+  font: var(--text-button);
+  cursor: pointer;
+  transition: filter .15s;
+}
+
+.btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.btn:hover {
+  filter: brightness(1.08);
+}
+
+.btn--primary {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.btn--ghost {
+  background: var(--color-white);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
+}
+
+.btn--danger {
+  background: var(--color-danger);
+  color: #fff;
+}
+
+/* Variante compacta para acciones secundarias de la fila de meta. */
+.btn--sm {
+  padding: var(--space-3) var(--space-6);
+  font: var(--text-caption);
+  font-weight: 600;
+}
+
+/* ----------------------------------------------------------------- filtro */
+.filtro {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-12);
+}
+
+.filtro__label {
+  font: var(--text-caption);
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.filtro__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.chip {
+  padding: var(--space-2) var(--space-6);
+  border: 1px solid var(--border-default);
+  border-radius: 999px;
+  font: var(--text-caption);
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: all .15s;
+}
+
+.chip:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.chip.is-active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+.vacio {
+  padding: var(--space-24) var(--space-10);
+  text-align: center;
+  color: var(--text-secondary);
+  background: var(--bg-subtle);
+  border-radius: var(--radius-lg);
+}
+
+/* ============================================================ NEWSLETTER ===
+   Figma layout12: horizontal, gap 48, padding 64 80, centrado */
+.newsletter {
+  background: var(--color-slate-900);
+  color: #fff;
+  padding-block: var(--space-20);
+}
+
+.newsletter__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+}
+
+.newsletter__content {
+  flex: 1;
+}
+
+.newsletter__title {
+  font: var(--text-title);
+}
+
+.newsletter__text {
+  color: var(--color-slate-200);
+  margin-top: var(--space-3);
+}
+
+.newsletter__form {
+  display: flex;
+  gap: var(--space-3);
+  flex: 0 0 420px;
+}
+
+.input {
+  /* Sin `flex: 1` aca a proposito. `.field` es flex COLUMN, y en el eje
+     vertical `flex: 1` impone `flex-basis: 0`, que pisa el `height` y deja
+     el input en ~22px en vez de los 48px de diseno. El crecimiento en el eje
+     horizontal se reaplica solo donde corresponde (newsletter, flex ROW). */
+  height: 48px;
+  padding-inline: var(--space-6);
+  background: var(--color-white);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  outline: none;
+  font: var(--text-body);
+  color: var(--text-primary);
+}
+
+/* La newsletter si es un flex ROW: ahi el input debe crecer. `min-width: 0`
+   evita que el flex item no baje de su ancho intrinseco y desborde. */
+.newsletter__form .input {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.input:focus {
+  border-color: var(--color-primary);
+}
+
+.input[aria-invalid="true"] {
+  border-color: var(--color-danger);
+}
+
+.newsletter__nota {
+  font: var(--text-caption);
+  color: var(--color-slate-200);
+  margin-top: var(--space-3);
+}
+
+.error {
+  font: var(--text-caption);
+  color: var(--color-danger);
+  min-height: 1.2em;
+  margin-top: var(--space-2);
+}
+
+/* ================================================================ FOOTER ===
+   Figma layout6: vertical, gap 64, padding 80 top / 40 bottom / 80 lr */
+.footer {
+  background: var(--bg-inverse);
+  color: #fff;
+}
+
+.footer__inner {
+  max-width: var(--container-width);
+  margin-inline: auto;
+  padding: var(--space-24) var(--container-pad) var(--space-14);
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: var(--space-16);
+}
+
+.footer__desc {
+  color: var(--color-slate-200);
+  margin-top: var(--space-5);
+  max-width: 44ch;
+}
+
+.footer__title {
+  font: var(--text-caption);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  margin-bottom: var(--space-5);
+}
+
+.footer__col a {
+  display: block;
+  padding-block: var(--space-2);
+  color: var(--color-slate-200);
+}
+
+.footer__col a:hover {
+  color: #fff;
+}
+
+.footer__stats {
+  display: flex;
+  gap: var(--space-12);
+  margin-top: var(--space-10);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.stat__value {
+  font: var(--text-logo);
+  color: var(--color-primary);
+}
+
+.stat__label {
+  font: var(--text-caption);
+  color: var(--color-slate-200);
+}
+
+.footer__legal {
+  border-top: 1px solid rgba(255, 255, 255, .1);
+  padding: var(--space-8) var(--container-pad) var(--space-14);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-8);
+  font: var(--text-caption);
+  color: var(--color-slate-200);
+  max-width: var(--container-width);
+  margin-inline: auto;
+}
+
+.footer__legal nav {
+  display: flex;
+  gap: var(--space-8);
+}
+
+.footer__legal a:hover {
+  color: #fff;
+}
+
+/* ================================================================ UTIL === */
+.page-title {
+  font: var(--text-hero);
+  font-size: 32px;
+}
+
+/* El H1 de las paginas internas es hijo directo de `.container`: el wrapper
+   `.page-head` dejo de hacer falta cuando se retiro la ruta de navegacion, y
+   su respiracion vertical quedo aca. En `noticia.html` el `.page-title` vive
+   dentro de `<article class="noticia">`, asi que no matchea y no hereda esto. */
+.container>.page-title {
+  padding-block: var(--space-16) var(--space-8);
+}
+
+.form-grid {
+  display: grid;
+  gap: var(--space-6);
+}
+
+/* Fila de dos campos lado a lado, como la que muestra
+   design/05-gestion-modal.png (Categoría | URL de Imagen). Colapsa a una
+   columna en mobile via la media query de 640px. */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.field label {
+  font: var(--text-meta);
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.field textarea.input {
+  height: auto;
+  min-height: 140px;
+  padding-block: var(--space-5);
+  resize: vertical;
+}
+
+.faq {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.faq details {
+  background: var(--color-white);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6) var(--space-8);
+}
+
+.faq summary {
+  cursor: pointer;
+  font: var(--text-button);
+  list-style: none;
+}
+
+.faq summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq summary::after {
+  content: '+';
+  float: right;
+  color: var(--color-primary);
+}
+
+.faq details[open] summary::after {
+  content: '−';
+}
+
+.faq p {
+  margin-top: var(--space-3);
+  color: var(--text-secondary);
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--color-overlay);
+  display: grid;
+  place-items: start center;
+  padding-top: var(--space-30);
+}
+
+.overlay[hidden] {
+  display: none;
+}
+
+.modal {
+  width: min(640px, 92vw);
+  background: var(--color-white);
+  border-radius: var(--radius-xl);
+  padding: var(--space-10);
+  max-height: 82vh;
+  overflow-y: auto;
+}
+
+.modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-8);
+}
+
+.modal__title {
+  font: var(--text-logo);
+  font-size: 22px;
+}
+
+.modal__close {
+  background: none;
+  border: 0;
+  font-size: 24px;
+  cursor: pointer;
+  line-height: 1;
+  color: var(--text-secondary);
+}
+
+.modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-8);
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabla th,
+.tabla td {
+  text-align: left;
+  padding: var(--space-5) var(--space-6);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.tabla th {
+  font: var(--text-caption);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--text-secondary);
+}
+
+.tabla td {
+  font: var(--text-body);
+}
+
+.tabla__acciones {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* =========================================================== RESPONSIVE === */
+@media (max-width: 1180px) {
+  :root {
+    --container-pad: 40px;
+  }
+
+  .hero {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hero__media {
+    flex: none;
+    width: 100%;
+    height: 360px;
+  }
+
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .newsletter__inner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .newsletter__form {
+    flex: none;
+  }
+
+  .footer__inner {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  :root {
+    --container-pad: 20px;
+    --container-pad-wide: 20px;
+  }
+
+  .nav__inner {
+    flex-wrap: wrap;
+    height: auto;
+    padding-block: var(--space-5);
+  }
+
+  /* --- Nav colapsable ---------------------------------------------------
+     El nav de escritorio (links en fila) no entra por debajo de 720px:
+     medido, `ul.nav__links` mide 393px de ancho minimo y a 360px de viewport
+     empuja `documentElement.scrollWidth` a 413. Se oculta por defecto y se
+     despliega con el boton hamburguesa (js/layout.js -> activarMenu()).
+     El panel va en `position: absolute` contra `.nav`, que es `sticky` y por
+     lo tanto es su bloque contenedor: asi no empuja el layout ni genera
+     scroll horizontal de pagina. */
+  .nav__toggle {
+    display: grid;
+  }
+
+  .nav__links {
+    display: none;
+  }
+
+  .nav__links.is-open {
+    display: flex;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding-block: var(--space-4);
+    background: var(--color-white);
+    border-bottom: 1px solid var(--border-subtle);
+    box-shadow: var(--shadow-md);
+  }
+
+  /* El subrayado de `.nav__link` es de escritorio; en vertical queda al
+     borde de cada item, asi que el estado activo se marca por color y peso,
+     que `.nav__link.is-active` ya define. */
+  .nav__links.is-open .nav__link {
+    padding: var(--space-4) var(--space-6);
+    border-bottom: 0;
+  }
+
+  .search {
+    width: 100%;
+    order: 3;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .container>.page-title {
+    padding-block: var(--space-10) var(--space-6);
+  }
+
+  .footer__inner {
+    grid-template-columns: 1fr;
+  }
+
+  .footer__legal {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* ==========================================================================
+   AGREGADO — vistas que no tenian equivalente en el catalogo.
+   Solo layout: color, tipografia y espaciado salen de los tokens.
+   ========================================================================== */
+
+/* --- Detalle de noticia (frame 03) ---------------------------------------
+   Reutiliza el bloque de autor del hero (.hero__author*), porque el design
+   system define UN solo componente de autor para ambos frames. */
+.detalle {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: var(--space-16);
+  align-items: start;
+  padding-top: var(--space-16);
+}
+
+/* Sin noticias relacionadas la lateral se colapsa y el articulo ocupa todo
+   el ancho. La clase la aplica noticia.html, no hace falta :has(). */
+.detalle.is-sin-relacionadas {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* La lateral reutiliza el renderer de grilla, pero a 320px una fila de tres
+   tarjetas no entra: baja a una columna y sin el padding de `.section`, que
+   ya cubre el `gap` de la grilla padre. */
+.detalle__aside .section {
+  padding-block: 0;
+}
+
+.detalle__aside .section__head {
+  margin-bottom: var(--space-8);
+}
+
+.detalle__aside .grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.noticia {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-10);
+}
+
+.noticia__meta {
+  font: var(--text-meta);
+  color: var(--text-secondary);
+}
+
+/* Fila superior del articulo: metadatos a la izquierda, acciones a la
+   derecha, como en design/03-detalle-noticia.png (autor en x=342, botones
+   en x=2056 sobre un lienzo de 2880). */
+.noticia__topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-8);
+  flex-wrap: wrap;
+}
+
+.noticia__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+}
+
+.noticia__autor {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.noticia__acciones {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+.noticia__volver {
+  margin-top: var(--space-8);
+}
+
+.noticia__lead {
+  font: var(--text-excerpt);
+  color: var(--text-secondary);
+}
+
+.noticia__cuerpo {
+  max-width: 68ch;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.noticia__p {
+  font: var(--text-excerpt);
+  line-height: 1.7;
+}
+
+/* --- Fila "Compartir" (frame 03) ------------------------------------------
+   Mismo patron que .filtro: label + controles en linea. */
+.compartir {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.compartir__btn {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  transition: border-color .15s, color .15s;
+}
+
+.compartir__btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.compartir__btn svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+.compartir__aviso {
+  font: var(--text-caption);
+  color: var(--color-primary);
+}
+
+/* --- Utilidad para ayudas de campo (hints) bajo un input ----------------- */
+.nota {
+  font: var(--text-caption);
+  color: var(--text-secondary);
+  margin-top: var(--space-2);
+}
+
+/* --- Dashboard (frame 04) -------------------------------------------------
+   La tabla no debe forzar scroll horizontal de la pagina. El contenedor
+   `.tabla-scroll` scrollea en X; la pagina queda quieta. */
+.tabla-scroll {
+  overflow-x: auto;
+}
+
+.tabla__acciones .btn {
+  padding: var(--space-2) var(--space-5);
+}
+
+/* Miniatura de la primera columna: el ancho fijo evita que la tabla crezca
+   por el `aspect-ratio` de `media()`. */
+.tabla__celda-imagen {
+  width: 1%;
+}
+
+.tabla__celda-imagen .media {
+  width: 72px;
+  border-radius: var(--radius-sm);
+}
+
+/* --- Vista previa de imagen del formulario de noticias --------------------
+   Reutiliza `.media`: mismo fallback, misma relacion de aspecto. El <img>
+   se oculta cuando falla la carga y queda el mensaje de error al lado, para
+   que una ruta invalida no rompa el formulario. */
+.preview {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-5);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+}
+
+.preview[hidden] {
+  display: none;
+}
+
+.preview__img {
+  width: 96px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  background: var(--color-slate-100);
+  flex-shrink: 0;
+}
+
+/* Necesario: el reset de arriba declara `img { display: block }` como regla
+   de autor, y esa le gana al `[hidden] { display: none }` del navegador. Sin
+   esto, una imagen rota queda un bloque gris de 96x64 al lado del error. */
+.preview__img[hidden] {
+  display: none;
+}
+
+.preview__msg {
+  font: var(--text-caption);
+  color: var(--text-secondary);
+}
+
+.preview__msg[data-estado="error"] {
+  color: var(--color-danger);
+}
+
+.preview__msg[data-estado="ok"] {
+  color: var(--color-primary);
+}
+
+/* --- Contacto (frame 06) --------------------------------------------------
+   main-container horizontal, gap 32 segun el archivo de Figma. */
+.contacto {
+  display: grid;
+  grid-template-columns: 1.1fr .9fr;
+  gap: var(--space-8);
+  align-items: start;
+}
+
+.contacto .form-grid,
+.contacto .faq {
+  margin-top: var(--space-10);
+}
+
+@media (max-width: 900px) {
+  .contacto {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- Detalle de noticia, responsive ---------------------------------------
+   Estas reglas van DESPUES de la base de `.detalle` a proposito. Los bloques
+   responsive de mas arriba (1180 / 720) quedan antes del bloque "AGREGADO" del
+   detalle, asi que una regla de igual especificidad escrita alla la pisaba y
+   la grilla de 2 columnas se mantenia en mobile: 320px de lateral + 48px de
+   gap desbordaban los 360px de viewport. Mismo criterio que `.contacto`. */
+@media (max-width: 1180px) {
+  .detalle {
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: var(--space-10);
+  }
+}
+
+/* Bajo 720px cae a una sola columna. El orden del DOM ya pone el articulo
+     antes que la lateral, asi que en escritorio el aside queda a la derecha sin
+     `order`; en mobile el `order` explicito mantiene articulo arriba y
+     relacionadas despues aunque el DOM cambie. */
+@media (max-width: 720px) {
+  .detalle {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-12);
+    padding-top: var(--space-10);
+  }
+
+  .detalle__main {
+    order: 1;
+  }
+
+  .detalle__aside {
+    order: 2;
+  }
+}
+
+/* La fila de dos campos del modal no entra en mobile: a 360px dos columnas
+     de inputs mas labels dejan el formulario ilegible. */
+@media (max-width: 640px) {
+  .form-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

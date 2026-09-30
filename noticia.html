@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detalle de noticia — TechNews Hub</title>
+  <meta name="description" content="Lectura completa de la noticia, con su autor, la categoría y las notas relacionadas.">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div data-layout="header"></div>
+
+  <main id="main">
+      <!-- El detalle usa el gutter ancho de 120px (ver design-system.md).
+           Grilla de 2 columnas: articulo a la izquierda, lateral de
+           relacionadas a la derecha, como en design/03-detalle-noticia.png
+           (el titulo "Noticias Relacionadas" arranca en x=1916 sobre un
+           lienzo de 2880). En mobile (bajo 720px) cae a una columna con el
+           articulo primero; el reordenado lo hace `order` en styles.css. -->
+      <div class="container container--wide">
+        <div class="detalle" id="detalle">
+          <div class="detalle__main" id="articulo"></div>
+          <aside class="detalle__aside" id="relacionadas" aria-label="Noticias relacionadas"></aside>
+        </div>
+    </div>
+  </main>
+
+  <div data-layout="footer"></div>
+
+  <script src="js/datos.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/componentes.js"></script>
+  <script src="js/almacen.js"></script>
+  <script src="js/interacciones.js"></script>
+  <script>
+    /* IIFE: en un script clasico no hay top-level await, pero dentro de una
+       funcion async si. La logica queda igual que antes. */
+    (async () => {
+    const ICO_LINK = '<path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/>';
+    const ICO_X = '<path d="M18.2 2.3h3.3l-7.2 8.3 8.5 11.2h-6.6l-5.2-6.8-6 6.8H1.7l7.7-8.8L1.3 2.3H8l4.7 6.2 5.5-6.2Zm-1.2 17.5h1.8L7.1 4.1H5.2l11.8 15.7Z"/>';
+    const ICO_IN = '<path d="M20.4 20.5h-3.6V15c0-1.3 0-3-1.9-3-1.8 0-2.1 1.4-2.1 2.9v5.6H9.4V9h3.4v1.6h.1c.5-.9 1.6-1.9 3.4-1.9 3.6 0 4.2 2.4 4.2 5.5v6.3ZM5.3 7.4A2.1 2.1 0 0 1 3.3 5.3 2.1 2.1 0 1 1 5.3 7.4Zm1.8 13.1H3.6V9h3.5v11.5ZM22.2 0H1.8C.8 0 0 .8 0 1.7v20.6C0 23.2.8 24 1.8 24h20.4c1 0 1.8-.8 1.8-1.7V1.7C24 .8 23.2 0 22.2 0Z"/>';
+
+    const icono = (d) => `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">${d}</svg>`;
+
+    try {
+      const id = new URLSearchParams(location.search).get('id');
+      const datos = await cargarDatos();
+      montarLayout(datos);
+
+      const detalle = document.getElementById('detalle');
+      const articulo = document.getElementById('articulo');
+      const relacionadas = document.getElementById('relacionadas');
+      const noticia = datos.noticias.find((n) => n.id === id);
+
+      if (!noticia) {
+        /* No hay noticia, y por lo tanto tampoco relacionadas: el articulo
+           se lleva el ancho completo. */
+        detalle.classList.add('is-sin-relacionadas');
+        articulo.innerHTML = `
+          <section class="section">
+            <h1 class="page-title">No encontramos esa noticia</h1>
+            <p class="vacio">
+              Es posible que el enlace haya cambiado o que la noticia ya no esté publicada.
+            </p>
+            <p style="margin-top: var(--space-10)">
+              <a class="btn btn--ghost" href="noticias.html">Volver al catálogo de noticias</a>
+            </p>
+          </section>`;
+      } else {
+        const autor = datos.autoresMap.get(noticia.autor) || { nombre: 'Redacción', rol: '' };
+        const categoria = datos.categoriasMap.get(noticia.categoria);
+        const nombreCat = categoria ? categoria.nombre : 'Noticias';
+        const parrafos = noticia.cuerpo || [];
+        const palabras = parrafos.join(' ').split(/\s+/).filter(Boolean).length;
+        const minutos = Math.max(1, Math.round(palabras / 200));
+        const url = location.href;
+
+        articulo.innerHTML = `
+          <article class="noticia">
+            <p>${tag(nombreCat)}</p>
+            <h1 class="page-title">${escapar(noticia.titulo)}</h1>
+            <div class="noticia__topbar">
+              <div class="noticia__meta">
+                <span class="noticia__autor">${escapar(autor.nombre)}</span>
+                <span>${escapar(fechaCorta(noticia.fecha))}</span>
+                <span>${minutos} min de lectura</span>
+              </div>
+              <div class="noticia__acciones">
+                <button class="btn btn--ghost btn--sm" type="button" id="fav-detalle"
+                        aria-pressed="false">Agregar a Favoritos</button>
+                <div class="compartir">
+                  <button class="compartir__btn" type="button" id="copiar"
+                          aria-label="Copiar el enlace de esta noticia">${icono(ICO_LINK)}</button>
+                  <a class="compartir__btn" target="_blank" rel="noopener noreferrer"
+                     href="${escapar(`https://twitter.com/intent/tweet?text=${encodeURIComponent(noticia.titulo)}&url=${encodeURIComponent(url)}`)}"
+                     aria-label="Compartir en X">${icono(ICO_X)}</a>
+                  <a class="compartir__btn" target="_blank" rel="noopener noreferrer"
+                     href="${escapar(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`)}"
+                     aria-label="Compartir en LinkedIn">${icono(ICO_IN)}</a>
+                </div>
+              </div>
+            </div>
+            ${media(noticia, '21 / 9')}
+            <p class="noticia__lead">${escapar(noticia.resumen)}</p>
+            <div class="noticia__cuerpo">
+              ${parrafos.map((p) => `<p class="noticia__p">${escapar(p)}</p>`).join('')}
+            </div>
+            <p class="noticia__volver">
+              <a class="btn btn--ghost" href="noticias.html">&larr; Volver a Noticias</a>
+            </p>
+            <span class="compartir__aviso" id="copiado" role="status"></span>
+          </article>`;
+
+        /* Boton de favorito: reutiliza el mismo almacen que las cards, asi
+           el corazon del detalle y el del listado nunca se contradicen. */
+        const btnFav = document.getElementById('fav-detalle');
+        const pintarFav = () => {
+          const activo = leerFavoritos().has(noticia.id);
+          btnFav.textContent = activo ? '★ En Favoritos' : 'Agregar a Favoritos';
+          btnFav.setAttribute('aria-pressed', String(activo));
+          btnFav.classList.toggle('btn--primary', activo);
+          btnFav.classList.toggle('btn--ghost', !activo);
+        };
+        pintarFav();
+        btnFav.addEventListener('click', () => {
+          alternarFavorito(noticia.id);
+          pintarFav();
+        });
+
+        /* 3 notas de la misma categoria; si no alcanzan, se completa con
+           las mas recientes del resto del archivo. datos.noticias ya viene
+           ordenado por fecha descendente. */
+        const mismaCat = datos.noticias.filter(
+          (n) => n.id !== noticia.id && n.categoria === noticia.categoria);
+        const otras = datos.noticias.filter(
+          (n) => n.id !== noticia.id && n.categoria !== noticia.categoria);
+        const sugeridas = [...mismaCat, ...otras].slice(0, 2);
+
+        /* Orden pedido: primero el perfil del autor, despues las relacionadas.
+           El perfil se muestra siempre; la grilla de relacionadas solo se
+           agrega si hay sugerencias, y sin ellas la lateral conserva el
+           ancho para que la tarjeta de autor no quede estirada. */
+        const tarjetaAutor = `
+          <div class="autor-card">
+            <div class="autor-card__head">
+              <span class="hero__avatar" aria-hidden="true"></span>
+              <div>
+                <p class="autor-card__name">${escapar(autor.nombre)}</p>
+                <p class="autor-card__role">${escapar(autor.rol)}</p>
+              </div>
+            </div>
+            <a class="autor-card__link" href="index.html">Ver perfil →</a>
+          </div>`;
+
+          if (sugeridas.length) {
+            relacionadas.innerHTML = tarjetaAutor + renderListado(sugeridas, {
+              titulo: 'Noticias Relacionadas',
+              bajada: '',
+              conFiltro: false,
+              autores: datos.autoresMap,
+              catsMap: datos.categoriasMap,
+            });
+          } else {
+            relacionadas.innerHTML = tarjetaAutor;
+          }
+
+        const aviso = document.getElementById('copiado');
+        document.getElementById('copiar').addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(url);
+            aviso.textContent = 'Enlace copiado';
+          } catch {
+            aviso.textContent = 'No se pudo copiar. Copiá el enlace desde la barra del navegador.';
+          }
+        });
+      }
+
+      /* Se llama una sola vez: activarFavoritos() delega en document, y
+         llamarlo de nuevo registraria un segundo listener. */
+      activarFavoritos();
+    } catch (err) {
+      document.getElementById('main').innerHTML = `
+        <div class="container"><p class="vacio">
+          No se pudieron cargar los datos del sitio.<br>
+          Verificá que <code>js/datos.js</code> esté presente junto a esta página.
+        </p></div>`;
+      console.error(err);
+    }
+    })();
+  </script>
+</body>
+</html>

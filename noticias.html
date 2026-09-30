@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Noticias — TechNews Hub</title>
+  <meta name="description"
+        content="Catálogo de noticias de tecnología: computación cuántica, inteligencia artificial, hardware, software y ciberseguridad.">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div data-layout="header"></div>
+
+  <main id="main">
+      <div class="container">
+        <div id="listado"></div>
+      </div>
+  </main>
+
+  <div data-layout="footer"></div>
+
+  <script src="js/datos.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/componentes.js"></script>
+  <script src="js/almacen.js"></script>
+  <script src="js/interacciones.js"></script>
+  <script>
+    /* IIFE: en un script clasico no hay top-level await, pero dentro de una
+       funcion async si. La logica queda igual que antes. */
+    (async () => {
+    try {
+      const params = new URLSearchParams(location.search);
+      const catParam = (params.get('categoria') || '').trim();
+      const q = (params.get('q') || '').trim();
+
+      const datos = await cargarDatos();
+      montarLayout(datos, q);
+
+      /* El filtro llega de dos lugares: los chips y el footer usan el id,
+         el componente tag() usa el nombre. Se aceptan ambos y siempre se
+         resuelve al id, que es lo que renderListado necesita para marcar
+         el chip activo. */
+      const sinAcentos = (s) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const categoria = catParam
+        ? datos.categorias.find((c) => c.id === catParam)
+          || datos.categorias.find((c) => sinAcentos(c.nombre) === sinAcentos(catParam))
+        : null;
+      const activa = categoria ? categoria.id : '';
+
+      let lista = categoria
+        ? datos.noticias.filter((n) => n.categoria === categoria.id)
+        : datos.noticias;
+      lista = buscar(q, lista);
+
+      const total = lista.length;
+      const plural = (n, sing, plur) => `${n} ${n === 1 ? sing : plur}`;
+
+      const titulo = q
+          ? 'Resultados de búsqueda'
+          : categoria
+            ? categoria.nombre
+            : 'Catálogo de Noticias';
+
+      const bajada = q
+        ? `${plural(total, 'resultado', 'resultados')} para «${q}».`
+        : categoria
+          ? `${plural(total, 'noticia', 'noticias')} publicadas en esta sección.`
+          : 'Todo el archivo de TechNews Hub, ordenado por fecha de publicación.';
+
+      document.getElementById('listado').innerHTML = renderListado(lista, {
+        titulo,
+        bajada,
+        categorias: datos.categorias,
+        activa,
+        conFiltro: true,
+        vacio: q
+          ? 'No encontramos noticias para esa búsqueda. Probá con otra categoría o usá menos términos.'
+          : 'Todavía no hay noticias publicadas en esta categoría.',
+          accion: 'Leer noticia completa',
+          autores: datos.autoresMap,
+          catsMap: datos.categoriasMap,
+          nivel: 'h1',
+        });
+
+      activarFavoritos();
+    } catch (err) {
+      document.getElementById('main').innerHTML = `
+        <div class="container"><p class="vacio">
+          No se pudieron cargar los datos del sitio.<br>
+          Verificá que <code>js/datos.js</code> esté presente junto a esta página.
+        </p></div>`;
+      console.error(err);
+    }
+    })();
+  </script>
+</body>
+</html>

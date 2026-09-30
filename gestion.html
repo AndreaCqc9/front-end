@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Noticias — TechNews Hub</title>
+  <meta name="description" content="Panel de administración de noticias: alta, edición y eliminación de artículos.">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div data-layout="header"></div>
+
+  <main id="main">
+    <!-- El dashboard usa el gutter ancho de 120px (ver design-system.md). -->
+    <div class="container container--wide">
+      <h1 class="page-title">Gestión de Noticias</h1>
+
+      <section class="section">
+        <div class="section__head">
+          <div>
+            <h2 class="section__title">Todas las Noticias</h2>
+            <p class="section__lead" id="resumen"></p>
+          </div>
+          <button class="btn btn--primary" type="button" id="btn-nueva">Nueva Noticia</button>
+        </div>
+
+        <div class="tabla-scroll">
+          <div id="tabla"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Modal de alta y edición. El contenido lo inyecta abrirModal(). -->
+  <div class="overlay" id="modal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal__head">
+        <h2 class="modal__title" id="modal-title">Crear Nueva Noticia</h2>
+        <button class="modal__close" type="button" id="modal-cerrar" aria-label="Cerrar">&times;</button>
+      </div>
+
+      <form class="form-grid" id="form-noticia" novalidate>
+        <div class="field">
+          <label for="f-titulo">Título de la Noticia</label>
+          <input class="input" id="f-titulo" name="titulo" type="text"
+                 minlength="10" maxlength="120" required>
+          <p class="error" id="e-titulo" role="alert"></p>
+        </div>
+
+        <!-- design/05-gestion-modal.png: Categoría y URL de Imagen comparten
+             la misma fila. En mobile (bajo 640px) la fila colapsa a una
+             columna, ver `.form-row` en styles.css. -->
+        <div class="form-row">
+          <div class="field">
+            <label for="f-categoria">Categoría</label>
+            <select class="input" id="f-categoria" name="categoria" required></select>
+            <p class="error" id="e-categoria" role="alert"></p>
+          </div>
+
+          <div class="field">
+            <label for="f-imagen">URL de Imagen</label>
+            <!-- type="text" y no type="url" a proposito: el campo acepta rutas
+                 relativas ("img/noticia-1.png"), que `type="url"` marca como
+                 invalidas por spec. El teclado de URL lo aporta inputmode. -->
+            <input class="input" id="f-imagen" name="imagen" type="text"
+                   inputmode="url" autocomplete="off" spellcheck="false"
+                   placeholder="img/noticia-1.png" aria-describedby="ayuda-imagen">
+            <p class="error" id="e-imagen" role="alert"></p>
+            <p class="nota" id="ayuda-imagen">
+              Ruta relativa a este archivo o URL completa. Opcional: sin imagen se
+              muestra el placeholder. Extensiones: png, jpg, jpeg, gif, webp,
+              avif, bmp, svg.
+            </p>
+            <!-- Vista previa en vivo. `hidden` la maneja pintarPreview(). -->
+            <div class="preview" id="preview" hidden>
+              <img class="preview__img" id="preview-img" alt="">
+              <span class="preview__msg" id="preview-msg" role="status"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="f-resumen">Descripción Breve</label>
+          <textarea class="input" id="f-resumen" name="resumen"
+                    minlength="40" maxlength="280" required></textarea>
+          <p class="error" id="e-resumen" role="alert"></p>
+        </div>
+
+        <div class="field">
+          <label for="f-cuerpo">Contenido Completo</label>
+          <textarea class="input" id="f-cuerpo" name="cuerpo" minlength="100" required></textarea>
+          <p class="error" id="e-cuerpo" role="alert"></p>
+          <p class="nota">Un párrafo por línea en blanco.</p>
+        </div>
+
+        <!-- Autor no aparece en design/05, pero el modelo de datos exige uno en
+             cada noticia (`autor` es required y las cards lo muestran), asi que
+             se conserva como campo propio al final en vez de romper el alta. -->
+        <div class="field">
+          <label for="f-autor">Autor</label>
+          <select class="input" id="f-autor" name="autor" required></select>
+          <p class="error" id="e-autor" role="alert"></p>
+        </div>
+
+        <div class="modal__actions">
+          <button class="btn btn--ghost" type="button" id="modal-cancelar">Cancelar</button>
+          <button class="btn btn--primary" type="submit" id="modal-guardar">Guardar Noticia</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div data-layout="footer"></div>
+
+  <script src="js/datos.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/componentes.js"></script>
+  <script src="js/almacen.js"></script>
+  <script src="js/interacciones.js"></script>
+  <script>
+    /* IIFE: en un script clasico no hay top-level await, pero dentro de una
+       funcion async si. La logica queda igual que antes. */
+    (async () => {
+    const REGLAS = {
+      titulo: { requerido: true, min: 10, etiqueta: 'El titular' },
+      categoria: { requerido: true, etiqueta: 'La categoría', verbo: 'es obligatoria' },
+      autor: { requerido: true, etiqueta: 'El autor' },
+      resumen: { requerido: true, min: 40, etiqueta: 'El resumen' },
+      /* Opcional, pero si se escribe tiene que ser una imagen: descarta al
+         vuelo lo que claramente no lo es (un .pdf, un id de youtube) en vez
+         de dejar un <img> roto en cada card. Sin imagen, `media()` cae en el
+         placeholder que ya usa. */
+      imagen: { imagen: true, etiqueta: 'La imagen' },
+      cuerpo: { requerido: true, min: 100, etiqueta: 'El cuerpo' },
+    };
+
+    try {
+      let datos = await cargarDatos();
+      montarLayout(datos);
+
+      const modal = document.getElementById('modal');
+      const form = document.getElementById('form-noticia');
+      const tituloModal = document.getElementById('modal-title');
+      const tabla = document.getElementById('tabla');
+      let editandoId = null;
+
+      /* ---- tabla ------------------------------------------------------ */
+
+      /* cargarDatos() ya aplico `tnh:borrados` y las filas guardadas, asi que
+         la lista es exactamente lo que hay que mostrar. */
+      const visibles = () => datos.noticias;
+
+      function renderTabla() {
+        const lista = visibles();
+
+        document.getElementById('resumen').textContent =
+          `${lista.length} ${lista.length === 1 ? 'noticia' : 'noticias'} visibles. `
+          + 'Las altas y ediciones se guardan en este navegador (localStorage).';
+
+        if (!lista.length) {
+          tabla.innerHTML = '<p class="vacio">No hay noticias para mostrar.</p>';
+          return;
+        }
+
+        const filas = lista.map((n) => {
+          const cat = datos.categoriasMap.get(n.categoria);
+          const autor = datos.autoresMap.get(n.autor);
+          return `<tr>
+            <td class="tabla__celda-imagen">${media(n, '3 / 2')}</td>
+            <td>${escapar(n.titulo)}</td>
+            <td>${escapar(cat ? cat.nombre : n.categoria)}</td>
+            <td>${escapar(autor ? autor.nombre : n.autor)}</td>
+            <td>${escapar(fechaLarga(n.fecha))}</td>
+            <td>
+              <div class="tabla__acciones">
+                <button class="btn btn--ghost" type="button"
+                        data-editar="${escapar(n.id)}">Editar</button>
+                <button class="btn btn--danger" type="button"
+                        data-eliminar="${escapar(n.id)}">Eliminar</button>
+              </div>
+            </td>
+          </tr>`;
+        }).join('');
+
+        tabla.innerHTML = `
+          <table class="tabla">
+            <caption class="sr-only">Listado de noticias con imagen, datos y acciones de edición y eliminación</caption>
+            <thead>
+              <tr>
+                <th scope="col">Imagen</th>
+                <th scope="col">Titular</th>
+                <th scope="col">Categoría</th>
+                <th scope="col">Autor</th>
+                <th scope="col">Fecha</th>
+                <th scope="col">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>${filas}</tbody>
+          </table>`;
+      }
+
+      /* ---- modal ------------------------------------------------------ */
+
+      const opciones = (items) => items
+        .map((i) => `<option value="${escapar(i.id)}">${escapar(i.nombre)}</option>`)
+        .join('');
+
+      form.elements.categoria.innerHTML =
+        '<option value="">Selecciona una categoría</option>' + opciones(datos.categorias);
+      form.elements.autor.innerHTML =
+        '<option value="">Selecciona un autor</option>' + opciones(datos.autores);
+
+      function limpiarErrores() {
+        form.querySelectorAll('.error').forEach((p) => { p.textContent = ''; });
+        form.querySelectorAll('[aria-invalid]').forEach((c) => {
+          c.setAttribute('aria-invalid', 'false');
+        });
+      }
+
+      /* ---- vista previa de imagen ------------------------------------- */
+
+      const preview = document.getElementById('preview');
+      const previewImg = document.getElementById('preview-img');
+      const previewMsg = document.getElementById('preview-msg');
+
+      /* Se dispara por `input`, asi que corre en cada tecla. No hay red ni
+         backend: solo cambia el `src` de un <img> y se escucha `load`/`error`.
+         Si la ruta no resuelve, se oculta la imagen y se avisa en texto: la
+         pagina nunca queda rota por esto. */
+      function pintarPreview() {
+        const valor = form.elements.imagen.value.trim();
+
+        if (!valor) {
+          preview.hidden = true;
+          previewImg.removeAttribute('src');
+          previewMsg.textContent = '';
+          return;
+        }
+
+        preview.hidden = false;
+        previewMsg.dataset.estado = 'cargando';
+        previewMsg.textContent = 'Cargando…';
+
+        /* Si el <img> quedo oculto por un error anterior, se muestra de nuevo.
+           Y si el `src` no cambia, el navegador no vuelve a disparar load ni
+           error: se lo saca antes de volver a asignar, asi la reevaluacion
+           ocurre siempre. */
+        previewImg.hidden = false;
+        previewImg.removeAttribute('src');
+        previewImg.src = valor;
+      }
+
+      previewImg.addEventListener('load', () => {
+        if (preview.hidden) return;
+        previewMsg.dataset.estado = 'ok';
+        previewMsg.textContent = 'Imagen cargada.';
+      });
+      previewImg.addEventListener('error', () => {
+        if (preview.hidden) return;
+        previewImg.hidden = true;
+        previewMsg.dataset.estado = 'error';
+        previewMsg.textContent = 'No se pudo cargar esa imagen. Revisá la ruta.';
+      });
+
+      form.elements.imagen.addEventListener('input', pintarPreview);
+
+      function abrirModal(noticia = null) {
+        editandoId = noticia ? noticia.id : null;
+        tituloModal.textContent = noticia ? 'Editar Noticia' : 'Crear Nueva Noticia';
+        form.reset();
+        limpiarErrores();
+
+        if (noticia) {
+          form.elements.titulo.value = noticia.titulo;
+          form.elements.categoria.value = noticia.categoria;
+          form.elements.autor.value = noticia.autor;
+          form.elements.resumen.value = noticia.resumen;
+          form.elements.imagen.value = noticia.imagen || '';
+          form.elements.cuerpo.value = (noticia.cuerpo || []).join('\n\n');
+        }
+
+        /* El preview se repinta siempre: al crear no hay nada, al editar hay
+           que recargar la imagen de la noticia. */
+        pintarPreview();
+
+        modal.hidden = false;
+        form.elements.titulo.focus();
+      }
+
+      function cerrarModal() {
+        modal.hidden = true;
+        editandoId = null;
+      }
+
+      document.getElementById('btn-nueva').addEventListener('click', () => abrirModal());
+      document.getElementById('modal-cerrar').addEventListener('click', cerrarModal);
+      document.getElementById('modal-cancelar').addEventListener('click', cerrarModal);
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) cerrarModal();
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !modal.hidden) cerrarModal();
+      });
+      limpiarErroresAlEscribir(form);
+
+      /* ---- mutaciones ------------------------------------------------- */
+
+      /** Toda mutacion pasa por aca: se tira la cache y se relee el JSON. */
+      async function recargar() {
+        invalidarCache();
+        datos = await cargarDatos();
+        renderTabla();
+      }
+
+      function guardarCambios(cambios) {
+        if (editandoId) {
+          // actualizarNoticia() es un upsert: funciona igual para una noticia
+          // creada por el usuario y para una del seed.
+          actualizarNoticia(editandoId, cambios);
+          return editandoId;
+        }
+        return crearNoticia(cambios).id;
+      }
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!validarForm(form, REGLAS)) return;
+
+        const cuerpo = form.elements.cuerpo.value
+          .split(/\n{2,}|\n/)
+          .map((p) => p.trim())
+          .filter(Boolean);
+
+        const cambios = {
+          titulo: form.elements.titulo.value.trim(),
+          categoria: form.elements.categoria.value,
+          autor: form.elements.autor.value,
+          resumen: form.elements.resumen.value.trim(),
+          /* Vacio -> null: es lo que `media()` lee para pintar el placeholder,
+             y `actualizarNoticia()` lo persiste (solo filtra `undefined`). */
+          imagen: form.elements.imagen.value.trim() || null,
+          cuerpo,
+        };
+
+        const guardados = guardarCambios(cambios);
+        cerrarModal();
+        await recargar();
+      });
+
+      tabla.addEventListener('click', async (e) => {
+        const editar = e.target.closest('[data-editar]');
+        if (editar) {
+          abrirModal(datos.noticias.find((n) => n.id === editar.dataset.editar));
+          return;
+        }
+
+        const borrar = e.target.closest('[data-eliminar]');
+        if (!borrar) return;
+
+        const id = borrar.dataset.eliminar;
+        const noticia = datos.noticias.find((n) => n.id === id);
+        const titulo = noticia ? noticia.titulo : id;
+        if (!confirm(`¿Eliminar "${titulo}"? Esta acción no se puede deshacer.`)) return;
+
+        eliminarNoticia(id);
+        await recargar();
+      });
+
+      renderTabla();
+    } catch (err) {
+      document.getElementById('main').innerHTML = `
+        <div class="container"><p class="vacio">
+          No se pudieron cargar los datos del sitio.<br>
+          Verificá que <code>js/datos.js</code> esté presente junto a esta página.
+        </p></div>`;
+      console.error(err);
+    }
+    })();
+  </script>
+</body>
+</html>
