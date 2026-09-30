@@ -3,7 +3,8 @@
 > **Módulo:** Desarrollo de Front-End  
 > **Actividad:** Entrega 2 – Prototipo Funcional (Semana 5)  
 > **Proyecto:** Periodismo de Tecnología Independiente  
-> **Diseño en Figma:** [Ver Mockups & Maquetación en Figma](https://www.figma.com/design/LskF01uXAoyQvwP2twfBIx/FrontEnd--Community-?node-id=0-1&p=f&t=sVMB88daqURONpRU-0)
+> **Diseño en Figma:** [Ver Mockups & Maquetación en Figma](https://www.figma.com/design/LskF01uXAoyQvwP2twfBIx/FrontEnd--Community-?node-id=0-1&p=f&t=sVMB88daqURONpRU-0)  
+> **Sitio Desplegado (GitHub Pages):** [https://andreacqc9.github.io/front-end/](https://andreacqc9.github.io/front-end/)
 
 ---
 
@@ -112,7 +113,7 @@ front-end/
 - [x] Funcionalidad completa de lista de favoritos con `localStorage`.
 - [x] Formularios interactivos con validación de datos en el cliente.
 - [x] Estructura modular del proyecto y archivos de estilo separados.
-- [x] Repositorio en GitHub listo para despliegue.
+- [x] Repositorio en GitHub y despliegue en **GitHub Pages**.
 
 ---
 
